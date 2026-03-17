@@ -1,6 +1,7 @@
 package com.example.commerce.controller;
 
-import com.example.commerce.dto.AuthRequest;
+import com.example.commerce.dto.request.AuthRequest;
+import com.example.commerce.dto.response.AuthResponse;
 import com.example.commerce.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,12 +17,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public String register(@RequestBody AuthRequest request) {
-        return authService.register(request.getEmail(), request.getPassword());
+    public AuthResponse register(@RequestBody AuthRequest request) {
+        return authService.register(request);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody AuthRequest request) {
-        return authService.login(request.getEmail(), request.getPassword());
+    public AuthResponse login(@RequestBody AuthRequest request) {
+        return authService.login(request);
     }
 }

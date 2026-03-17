@@ -1,5 +1,7 @@
 package com.example.commerce.service;
 
+import com.example.commerce.dto.request.AuthRequest;
+import com.example.commerce.dto.response.AuthResponse;
 import com.example.commerce.entity.user.Role;
 import com.example.commerce.entity.user.RoleName;
 import com.example.commerce.entity.user.User;
@@ -15,36 +17,44 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public String register(String email, String password) {
-        if (userRepository.existsByEmail(email)) {
+    public AuthResponse register(AuthRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
+
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
                 .orElseThrow();
 
         User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoles(Set.of(userRole));
 
         userRepository.save(user);
 
-        return jwtService.generateToken(email);
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new AuthResponse(token, user.getEmail());
     }
 
-    public String login(String email, String password) {
-        User user = userRepository.findByEmail(email)
+    public AuthResponse login(AuthRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Wrong password");
         }
 
-        return jwtService.generateToken(email);
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new AuthResponse(token, user.getEmail());
     }
 }
